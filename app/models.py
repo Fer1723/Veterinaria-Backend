@@ -11,7 +11,6 @@ class Owner(Base):
     phone = Column(String)
     email = Column(String, unique=True, index=True)
     
-    # El nombre aquí debe coincidir con el atributo en Pet
     pets = relationship("Pet", back_populates="owner", cascade="all, delete-orphan")
 
 class Pet(Base):
@@ -24,10 +23,8 @@ class Pet(Base):
     sex = Column(String, nullable=True)
     color = Column(String, nullable=True)
     
-    # ForeignKey apunta al nombre de la TABLA ("owners.id")
     owner_id = Column(Integer, ForeignKey("owners.id"))
 
-    # back_populates apunta al NOMBRE DEL ATRIBUTO en la otra clase ("pets")
     owner = relationship("Owner", back_populates="pets")
 
     appointments = relationship("Appointment", back_populates="pet", cascade="all , delete-orphan")

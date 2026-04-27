@@ -1,14 +1,14 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional, Union
-from datetime import date, datetime # Cambié datetime por date para que sea más limpio con el input de HTML
+from datetime import date, datetime 
 
-# 1. ESQUEMAS DE CITAS (Deben ir primero)
+# 1. ESQUEMAS DE CITAS
 class AppointmentBase(BaseModel):
     date: str
     time: str
     reason: str
     status: Optional[str] = "Pendiente"
-    pet_id: int # Cambiado a int para que coincida con el ID de la mascota en la DB
+    pet_id: int # int para que coincida con el ID de la mascota en la DB
     prescription_text: Optional[str] = None
 
 class AppointmentCreate(AppointmentBase):
@@ -19,12 +19,12 @@ class Appointment(AppointmentBase):
     class Config:
         from_attributes = True
 
-# 2. ESQUEMAS DE MASCOTAS (Dependen de Appointment)
+# 2. ESQUEMAS DE MASCOTAS 
 class PetBase(BaseModel):
     name: str
     species: str
     breed: Optional[str] = None
-    birth_date: Optional[Union[date, datetime, str]] = None # Lo dejamos como str para facilitar el manejo con el input de React
+    birth_date: Optional[Union[date, datetime, str]] = None # str para facilitar el manejo con el input de React
     sex : Optional[str]=  None
     color : Optional[str]= None
 
@@ -34,7 +34,7 @@ class PetCreate(PetBase):
 class Pet(PetBase):
     id: int
     owner_id: int
-    appointments: List[Appointment] = [] # Ahora sí conoce qué es Appointment
+    appointments: List[Appointment] = []
     class Config:
         from_attributes = True 
 
@@ -49,7 +49,7 @@ class Owner(BaseModel):
     name: str
     email: str
     phone: Optional[str] = None
-    pets: List[Pet] = [] # Ahora sí conoce qué es Pet
+    pets: List[Pet] = []
  
     class Config:
         from_attributes = True

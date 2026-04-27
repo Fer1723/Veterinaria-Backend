@@ -33,7 +33,7 @@ app = FastAPI(
 # 2. Configuración
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # El puerto de tu React
+    allow_origins=["*"], # El puerto de React
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,7 +52,7 @@ def enviar_aviso_doctora(dueño, mascota, fecha, hora, motivo):
     # --- CONFIGURACIÓN ---
     # El correo desde donde saldrá el aviso (ej. el de la clínica)
     correo_emisor = "fercoarteaga314@gmail.com" 
-    password_emisor = "beng gojx oymr lkgh" # La de 16 letras de Google
+    password_emisor = "beng gojx oymr lkgh" # Contraseña creada dentro del el mismo correo
     
     # EL CORREO DE LA DOCTORA (A donde llegará el aviso)
     correo_doctora = "luisfernandoarteaga879@gmail.com" 
@@ -409,7 +409,6 @@ def export_inventory(db: Session = Depends(database.get_db)):
     grouped = {}
     
     for p in products:
-        # Quitamos el sufijo invisible para agruparlos
         base_name = p.name.split("_@@_")[0].strip()
         key = base_name.lower()
         
@@ -430,7 +429,6 @@ def export_inventory(db: Session = Depends(database.get_db)):
                 
     data = []
     for g in grouped.values():
-        # --- AQUÍ ESTÁ LA SOLUCIÓN ---
         # Convertimos cada fecha a texto (string) antes de unirlas con comas
         fechas_texto = [str(fecha) for fecha in g["Caducidades"]]
         fechas = ", ".join(fechas_texto) if fechas_texto else "N/A"
@@ -461,7 +459,7 @@ def export_weekly_sales(db: Session = Depends(database.get_db)):
     data = []
     for v in ventas_semana:
         producto = db.query(models.Product).filter(models.Product.id == v.product_id).first()
-        # Limpiamos el nombre para que el excel se vea limpio
+        # Limpiamos el nombre para que el excel
         nombre_limpio = producto.name.split("_@@_")[0].strip() if producto else "Desconocido"
         data.append({
             "Fecha y Hora": v.sale_date.strftime("%Y-%m-%d %H:%M:%S"),
