@@ -197,17 +197,12 @@ def create_pet(pet: schemas.PetCreate, db: Session = Depends(database.get_db)):
 @app.get("/owners/", response_model=List[schemas.Owner])
 def get_owners(db: Session = Depends(database.get_db)):
     owners = db.query(models.Owner).all()
-    if  not owners:
-        raise HTTPException(status_code=404, detail="No se encontraron dueños registrados")
-    
     return owners
 
 # Muestra de las mascotas 
 @app.get("/pets/", response_model=List[schemas.Pet])
 def get_pets(db: Session = Depends(database.get_db)):
     pets = db.query(models.Pet).all()
-    if not pets:
-        raise HTTPException(status_code=404, detail="No hay mascotas en el sistema actualmente")
     return pets
 
 # Mostrar todos los usuarios que existen
