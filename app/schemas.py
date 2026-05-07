@@ -41,13 +41,15 @@ class Pet(PetBase):
 # 3. ESQUEMAS DE DUEÑOS (Dependen de Pet)
 class OwnerCreate(BaseModel):
     name: str
-    email: str
+    address: str
+    #email: str
     phone: Optional[str] = None
 
 class Owner(BaseModel):
     id: int
     name: str
-    email: str
+    address: str
+    #email: str
     phone: Optional[str] = None
     pets: List[Pet] = []
  

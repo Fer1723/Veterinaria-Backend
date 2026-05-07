@@ -8,8 +8,8 @@ class Owner(Base):
     __tablename__ = "owners"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    address = Column(String, index=True)
     phone = Column(String)
-    email = Column(String, unique=True, index=True)
     
     pets = relationship("Pet", back_populates="owner", cascade="all, delete-orphan")
 

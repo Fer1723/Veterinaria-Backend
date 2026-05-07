@@ -158,8 +158,8 @@ def create_owner(owner: schemas.OwnerCreate, db: Session = Depends(database.get_
     try:
         # Creamos el objeto del modelo
         db_owner = models.Owner(
-            name=owner.name, 
-            email=owner.email, 
+            name=owner.name,
+            address=owner.address, 
             phone=owner.phone
         )
         db.add(db_owner)
@@ -229,7 +229,8 @@ def update_owner(owner_id: int, owner_update: schemas.OwnerCreate, db: Session =
         raise HTTPException(status_code=404, detail="Dueño no encontrado para actualizar")
     
     db_owner.name = owner_update.name
-    db_owner.email = owner_update.email
+    db_owner.address = owner_update.address
+    #db_owner.email = owner_update.email
     db_owner.phone = owner_update.phone
 
     db.commit()
@@ -285,25 +286,44 @@ def create_appointment(appointment: schemas.AppointmentCreate,  background_tasks
     db.commit()
     db.refresh(db_appointment)
 
-    mascota = db.query(models.Pet).filter(models.Pet.id == appointment.pet_id).first()
-    dueño = db.query(models.Owner).filter(models.Owner.id == mascota.owner_id).first() if mascota else None
-    
-    nombre_mascota = mascota.name if mascota else "N/D"
-    nombre_dueño = dueño.name if dueño else "N/D"
+    # ✨ EL TRUCO: Verificamos que el estado sea "Pendiente" antes de mandar el correo
+    if appointment.status == "Pendiente":
+        mascota = db.query(models.Pet).filter(models.Pet.id == appointment.pet_id).first()
+        dueño = db.query(models.Owner).filter(models.Owner.id == mascota.owner_id).first() if mascota else None
+        
+        nombre_mascota = mascota.name if mascota else "N/D"
+        nombre_dueño = dueño.name if dueño else "N/D"
 
-    background_tasks.add_task(
-        enviar_aviso_doctora, 
-        nombre_dueño, 
-        nombre_mascota, 
-        appointment.date, 
-        appointment.time, 
-        appointment.reason
-    )
+        background_tasks.add_task(
+            enviar_aviso_doctora, 
+            nombre_dueño, 
+            nombre_mascota, 
+            appointment.date, 
+            appointment.time, 
+            appointment.reason
+        )
+        
     return db_appointment
 
 @app.get("/appointments/", response_model=List[schemas.Appointment])
 def get_appointments(db: Session = Depends(database.get_db)):
     return db.query(models.Appointment).all()
+
+@app.get("/appointments/booked-times/{date}")
+def get_booked_times(date: str, db: Session = Depends(database.get_db)):
+    appointments = db.query(models.Appointment).filter(
+        models.Appointment.date == date,
+        models.Appointment.status != "Cancelada"
+    ).all()
+    
+    booked_times = []
+    for appt in appointments:
+        if isinstance(appt.time, str):
+            booked_times.append(appt.time[:5])
+        else:
+            booked_times.append(appt.time.strftime('%H:%M'))
+            
+    return booked_times
 
 @app.put("/appointments/{appt_id}", response_model=schemas.Appointment)
 def update_appointment(appt_id: int, appt_update: schemas.AppointmentCreate, db: Session = Depends(database.get_db)):
