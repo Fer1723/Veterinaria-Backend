@@ -51,11 +51,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 def enviar_aviso_doctora(dueño, mascota, fecha, hora, motivo):
     # --- CONFIGURACIÓN ---
     # El correo desde donde saldrá el aviso (ej. el de la clínica)
-    correo_emisor = "fercoarteaga314@gmail.com" 
-    password_emisor = "beng gojx oymr lkgh" # Contraseña creada dentro del el mismo correo
+    correo_emisor = "mdogsandcats28@gmail.com" 
+    password_emisor = "fcmt nepk ykyq ztpu" # Contraseña creada dentro del el mismo correo
     
     # EL CORREO DE LA DOCTORA (A donde llegará el aviso)
-    correo_doctora = "luisfernandoarteaga879@gmail.com" 
+    correo_doctora = "marucha28@me.com" 
 
     # Crear el mensaje
     msg = MIMEMultipart()
