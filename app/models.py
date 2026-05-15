@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, Dat
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
+from datetime import datetime
 
 class Owner(Base):
     __tablename__ = "owners"
@@ -24,6 +25,8 @@ class Pet(Base):
     color = Column(String, nullable=True)
     
     owner_id = Column(Integer, ForeignKey("owners.id"))
+
+    registration_date = Column(String, default=lambda: datetime.now().strftime("%d/%m/%Y"))
 
     owner = relationship("Owner", back_populates="pets")
 

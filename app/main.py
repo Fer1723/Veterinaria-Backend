@@ -22,6 +22,11 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+import os # Aseguramos que os esté importado para leer el .env
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 
 app = FastAPI(
@@ -49,22 +54,28 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 def enviar_aviso_doctora(dueño, mascota, fecha, hora, motivo):
-    # --- CONFIGURACIÓN ---
-    # El correo desde donde saldrá el aviso (ej. el de la clínica)
-    correo_emisor = "mdogsandcats28@gmail.com" 
-    password_emisor = "fcmt nepk ykyq ztpu" # Contraseña creada dentro del el mismo correo
     
-    # EL CORREO DE LA DOCTORA (A donde llegará el aviso)
-    correo_doctora = "marucha28@me.com" 
+    # --- CONFIGURACIÓN ---
+    correo_emisor = "mdogsandcats28@gmail.com" 
+    password_emisor = os.getenv("EMAIL_PASSWORD")
+    
+    # LISTA DE DOCTORAS
+    correos_destino = [
+        "marucha28@me.com", 
+        "ofeliadogsandcats@gmail.com"
+    ]
+    
+    # ✨ LA MAGIA: Convertimos la lista en un solo texto separado por comas
+    destinatarios_texto = ", ".join(correos_destino)
 
     # Crear el mensaje
     msg = MIMEMultipart()
     msg['From'] = correo_emisor
-    msg['To'] = correo_doctora
+    msg['To'] = destinatarios_texto # <--- Le pasamos el texto, no la lista
     msg['Subject'] = f"📅 Nueva Cita Agendada: {mascota}"
 
     cuerpo = f"""
-    Hola Doctora,
+    Hola Doctoras,
     
     Se ha registrado una nueva cita en el sistema:
     
@@ -80,15 +91,14 @@ def enviar_aviso_doctora(dueño, mascota, fecha, hora, motivo):
     msg.attach(MIMEText(cuerpo, 'plain'))
 
     try:
-        # Si usa Gmail es smtp.gmail.com. Si usa Outlook es smtp.office365.com
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login(correo_emisor, password_emisor)
         server.send_message(msg)
         server.quit()
-        print("Aviso enviado a la doctora.")
+        print("✅ Aviso enviado con éxito a todas las doctoras.")
     except Exception as e:
-        print(f"Error al enviar aviso: {e}")
+        print(f"❌ Error al enviar aviso: {e}")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -155,22 +165,21 @@ def read_root():
 #Creacion de los dueños
 @app.post("/owners/", response_model=schemas.Owner)
 def create_owner(owner: schemas.OwnerCreate, db: Session = Depends(database.get_db)):
-    try:
-        # Creamos el objeto del modelo
-        db_owner = models.Owner(
-            name=owner.name,
-            address=owner.address, 
-            phone=owner.phone
-        )
-        db.add(db_owner)
-        db.commit()
-        db.refresh(db_owner)
-        return db_owner
-    except Exception as e:
-        db.rollback() # Revierte si algo falla
-        print(f"ERROR DETECTADO: {e}") # Esto saldrá en tu terminal de VS Code
-        raise HTTPException(status_code=500, detail=str(e))
     
+    # 1. Buscamos si ya existe alguien registrado con ese MISMO TELÉFONO
+    existing_owner = db.query(models.Owner).filter(models.Owner.phone == owner.phone).first()
+    
+    # 2. Si ya existe, ¡detenemos todo y regresamos al dueño original!
+    if existing_owner:
+        return existing_owner
+        
+    # 3. Si no existe, es un cliente nuevo y lo guardamos normalmente
+    db_owner = models.Owner(**owner.model_dump())
+    db.add(db_owner)
+    db.commit()
+    db.refresh(db_owner)
+    return db_owner
+ 
 #Creacion de las mascotas
 @app.post("/pets/", response_model=schemas.Pet)
 def create_pet(pet: schemas.PetCreate, db: Session = Depends(database.get_db)):

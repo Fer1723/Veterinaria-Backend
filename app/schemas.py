@@ -27,6 +27,7 @@ class PetBase(BaseModel):
     birth_date: Optional[Union[date, datetime, str]] = None # str para facilitar el manejo con el input de React
     sex : Optional[str]=  None
     color : Optional[str]= None
+    registration_date: str | None = None
 
 class PetCreate(PetBase):
     owner_id: int
