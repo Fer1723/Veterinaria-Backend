@@ -1,9 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
 
-# Cambia postgresql:// por postgresql+pg8000://
-SQLALCHEMY_DATABASE_URL = "postgresql+pg8000://postgres:admin123@127.0.0.1:5432/veterinaria_db"
+load_dotenv()
+
+# Cambia postgresql:// por postgresql+pg8000:// (CAMBIAMOS A LA URL DE LA NUBE)
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
