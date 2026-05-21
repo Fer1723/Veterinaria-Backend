@@ -374,6 +374,22 @@ def create_or_update_product(product: schemas.ProductCreate, db: Session = Depen
     db.refresh(new_product)
     return new_product
 
+@app.put("/products/{product_id}", response_model=schemas.Product)
+def update_product(product_id: int, product_update: schemas.ProductCreate, db: Session = Depends(database.get_db)):
+    db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not db_product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    
+    # Actualizamos solo la información base que aplica a todos los lotes
+    db_product.category = product_update.category
+    db_product.price = product_update.price
+    db_product.unit = product_update.unit
+    db_product.min_stock = product_update.min_stock
+        
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
 @app.delete("/products/{product_id}")
 def delete_product(product_id: int, db: Session = Depends(database.get_db)):
     db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
