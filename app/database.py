@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Cambia postgresql:// por postgresql+pg8000:// (CAMBIAMOS A LA URL DE LA NUBE)
+#Prueba de comentario
+
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
